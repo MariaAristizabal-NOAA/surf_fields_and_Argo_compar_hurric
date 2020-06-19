@@ -18,7 +18,14 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
                       'rtofs_glo_3dz_f012_6hrly_hvr_US_east.nc',\
                       'rtofs_glo_3dz_f018_6hrly_hvr_US_east.nc',\
                       'rtofs_glo_3dz_f024_6hrly_hvr_US_east.nc']
-    
+        
+    # COPERNICUS MARINE ENVIRONMENT MONITORING SERVICE (CMEMS)
+    url_cmems = 'http://nrt.cmems-du.eu/motu-web/Motu'
+    service_id = 'GLOBAL_ANALYSIS_FORECAST_PHY_001_024-TDS'
+    product_id = 'global-analysis-forecast-phy-001-024'
+    depth_min = '0.493'
+    out_dir = '/home/aristizabal/crontab_jobs'
+        
     # Bathymetry file
     #bath_file = '/Users/aristizabal/Desktop/MARACOOS_project/Maria_scripts/nc_files/GEBCO_2014_2D_-100.0_0.0_-60.0_45.0.nc'    
     bath_file = '/home/aristizabal/bathymetry_files/GEBCO_2014_2D_-100.0_0.0_-10.0_50.0.nc'
@@ -37,6 +44,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     import matplotlib.dates as mdates
     from erddapy import ERDDAP
     import pandas as pd
+    import os
     
     # Do not produce figures on screen
     plt.switch_backend('agg')
@@ -151,7 +159,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     t_GOFS = netCDF4.num2date(tt[:],tt.units) 
     
     depth_GOFS = np.asarray(GOFS_ts['depth'][:])
-
+    
     #%% Map Argo floats
      
     lev = np.arange(-9000,9100,100)
@@ -236,11 +244,61 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
         #lon_RTOFS = lonRTOFS[0,oklon_RTOFS]
         #lat_RTOFS = latRTOFS[oklat_RTOFS,0]
         
+        # Downloading and reading Copernicus output
+        motuc = 'python -m motuclient --motu ' + url_cmems + \
+        ' --service-id ' + service_id + \
+        ' --product-id ' + product_id + \
+        ' --longitude-min ' + str(argo_lon[0]-2/12) + \
+        ' --longitude-max ' + str(argo_lon[0]+2/12) + \
+        ' --latitude-min ' + str(argo_lat[0]-2/12) + \
+        ' --latitude-max ' + str(argo_lat[0]+2/12) + \
+        ' --date-min ' + str(tini-timedelta(0.5)) + \
+        ' --date-max ' + str(tend+timedelta(0.5)) + \
+        ' --depth-min ' + depth_min + \
+        ' --depth-max ' + str(np.nanmax(argo_pres)+1000) + \
+        ' --variable ' + 'thetao' + ' ' + \
+        ' --variable ' + 'so'  + ' ' + \
+        ' --out-dir ' + out_dir + \
+        ' --out-name ' + str(id) + '.nc' + ' ' + \
+        ' --user ' + 'maristizabalvar' + ' ' + \
+        ' --pwd ' +  'MariaCMEMS2018'
+        
+        os.system(motuc)
+        # Check if file was downloaded
+
+        COP_file = out_dir + '/' + str(id) + '.nc'
+        # Check if file was downloaded
+        resp = os.system('ls ' + out_dir +'/' + str(id) + '.nc')
+        if resp == 0:
+            COP = xr.open_dataset(COP_file)
+
+            latCOP = np.asarray(COP.latitude[:])
+            lonCOP = np.asarray(COP.longitude[:])
+            depth_COP = np.asarray(COP.depth[:])
+            tCOP = np.asarray(mdates.num2date(mdates.date2num(COP.time[:])))
+        else:
+            latCOP = np.empty(1)
+            latCOP[:] = np.nan
+            lonCOP = np.empty(1)
+            lonCOP[:] = np.nan
+            tCOP = np.empty(1)
+            tCOP[:] = np.nan
+
+        tmin = tini
+
+        oktimeCOP = np.where(mdates.date2num(tCOP) >= mdates.date2num(tmin))[0][0]
+        oklonCOP = np.where(lonCOP >= argo_lon[0])[0][0]
+        oklatCOP = np.where(latCOP >= argo_lat[0])[0][0]
+        
+        temp_COP = np.asarray(COP.variables['thetao'][oktimeCOP,:,oklatCOP,oklonCOP])
+        salt_COP = np.asarray(COP.variables['so'][oktimeCOP,:,oklatCOP,oklonCOP])
+        
         # Figure temp
         plt.figure(figsize=(5,6))
         plt.plot(argo_temp,-argo_pres,'.-',linewidth=2,label='ARGO Float id '+str(id))
         plt.plot(temp_GOFS,-depth_GOFS,'.-',linewidth=2,label='GOFS 3.1',color='red')
         plt.plot(temp_RTOFS,-depth_RTOFS,'.-',linewidth=2,label='RTOFS',color='g')
+        plt.plot(temp_COP,-depth_COP,'.-',linewidth=2,label='Copernicus',color='darkorchid')
         plt.ylim([-1000,0])
         plt.title('Temperature Profile on '+ str(argo_time[0])[0:13] +
                   '\n [lon,lat] = [' \
@@ -251,7 +309,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
         plt.xlabel('$^oC$',fontsize=14)
         plt.legend(loc='lower right',fontsize=14)
         
-        file = folder_fig + 'ARGO_vs_GOFS_RTOFS_temp_' + str(id) 
+        file = folder_fig + 'ARGO_vs_GOFS_RTOFS_COP_temp_' + str(id) 
         plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
         
         # Figure salt
@@ -259,6 +317,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
         plt.plot(argo_salt,-argo_pres,'.-',linewidth=2,label='ARGO Float id '+str(id))
         plt.plot(salt_GOFS,-depth_GOFS,'.-',linewidth=2,label='GOFS 3.1',color='red')
         plt.plot(salt_RTOFS,-depth_RTOFS,'.-',linewidth=2,label='RTOFS',color='g')
+        plt.plot(salt_COP,-depth_COP,'.-',linewidth=2,label='Copernicus',color='darkorchid')
         plt.ylim([-1000,0])
         plt.title('Salinity Profile on '+ str(argo_time[0])[0:13] +
                   '\n [lon,lat] = [' \
@@ -268,5 +327,8 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
         plt.ylabel('Depth (m)',fontsize=14)
         plt.legend(loc='lower right',fontsize=14)
         
-        file = folder_fig + 'ARGO_vs_GOFS_RTOFS_salt_' + str(id)
+        file = folder_fig + 'ARGO_vs_GOFS_RTOFS_COP_salt_' + str(id)
         plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+
+
+
