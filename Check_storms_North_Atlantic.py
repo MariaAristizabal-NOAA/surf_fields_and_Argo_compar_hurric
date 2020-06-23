@@ -22,8 +22,13 @@ lon_lim_SAB = [-82,-64]
 lat_lim_SAB = [25,36]
 
 # MAB
-lon_lim_MAB = [-77,-64]
-lat_lim_MAB = [35,42]
+#lon_lim_MAB = [-77,-64]
+#lat_lim_MAB = [35,42]
+lon_lim_MAB = [-77,-55]
+lat_lim_MAB = [35,46]
+
+lon_lim = []
+lat_lim = []
 
 #%%
 
@@ -195,19 +200,28 @@ if np.logical_and(np.mean(lon_forec_track) >= lon_lim_MAB[0],\
 
 #%% 
 
-if len(name) != 0:
+if np.logical_and(len(name) != 0,len(lon_lim) != 0):
     os.chdir('/www/web/rucool/hurricane/Hurricane_season_' + str(tini.year))
     os.system('mkdir ' + ti.strftime('%b-%d')  ) 
-    os.system('mkdir ' + ti.strftime('%b-%d') + '/' + name )
+    os.system('mkdir ' + ti.strftime('%b-%d') + '/' + name.split(' ')[1] )
 
     folder_fig = '/www/web/rucool/hurricane/Hurricane_season_' \
-        + str(tini.year)+ '/' + ti.strftime('%b-%d') + '/' + name + '/'
+        + str(tini.year)+ '/' + ti.strftime('%b-%d') + '/' + name.split(' ')[1] + '/'
 
-    print('Reading GOFS 3.1')
-    GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
-    
-    print('Reading RTOFS')
-    RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
-    
-    print('Reading Argo floats')
-    GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig)
+    try:
+        print('Reading Argo floats')
+        GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig)
+    except Exception as err:
+        print(err)
+   
+    try: 
+        print('Reading RTOFS')
+        RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
+    except Exception as err:
+        print(err)    
+
+    try:
+        print('Reading GOFS 3.1')
+        GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
+    except Exception as err:
+        print(err) 

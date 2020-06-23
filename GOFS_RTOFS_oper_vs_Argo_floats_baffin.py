@@ -150,22 +150,34 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     argo_salts = np.asarray(df['psal (PSU)'])
     
     #%% GOGF 3.1
-    
-    GOFS_ts = xr.open_dataset(url_GOFS_ts,decode_times=False)
-    
-    lt_GOFS = np.asarray(GOFS_ts['lat'][:])
-    ln_GOFS = np.asarray(GOFS_ts['lon'][:])
-    tt = GOFS_ts['time']
-    t_GOFS = netCDF4.num2date(tt[:],tt.units) 
-    
-    depth_GOFS = np.asarray(GOFS_ts['depth'][:])
+        
+    try:
+        GOFS_ts = xr.open_dataset(url_GOFS_ts,decode_times=False)
+        
+        lt_GOFS = np.asarray(GOFS_ts['lat'][:])
+        ln_GOFS = np.asarray(GOFS_ts['lon'][:])
+        tt = GOFS_ts['time']
+        t_GOFS = netCDF4.num2date(tt[:],tt.units) 
+        depth_GOFS = np.asarray(GOFS_ts['depth'][:])
+    except Exception as err:
+        print(err)
+        GOFS_ts = np.nan
+        lt_GOFS = np.nan
+        ln_GOFS = np.nan
+        depth_GOFS = np.nan
+        t_GOFS = ti
     
     #%% Map Argo floats
      
     lev = np.arange(-9000,9100,100)
     plt.figure()
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,lev,cmap=cmocean.cm.topo) 
-    plt.plot(np.unique(argo_lons),np.unique(argo_lats),'s',color='g',markersize=5,markeredgecolor='k')
+    
+    argo_idd = np.unique(argo_ids)
+    for i,id in enumerate(argo_idd): 
+        okind = np.where(argo_ids == id)[0]
+        plt.plot(np.unique(argo_lons[okind]),np.unique(argo_lats[okind]),'s',color='g',markersize=5,markeredgecolor='k')
+    
     plt.title('Argo Floats ' + str(tini)[0:10]+'-'+str(tend)[0:10],fontsize=16)
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
@@ -174,7 +186,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     file = folder_fig + 'ARGO_lat_lon'
     #file = folder_fig + 'ARGO_lat_lon_' + str(np.unique(argo_times)[0])[0:10]
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
-    
+
     #%% Figure argo float vs GOFS and vs RTOFS
     
     argo_idd = np.unique(argo_ids)
@@ -191,13 +203,16 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
         
         # GOFS
         print('Retrieving coordinates from GOFS')
-        oktt_GOFS = np.where(t_GOFS >= argo_time[0])[0][0]
-        oklat_GOFS = np.where(lt_GOFS >= argo_lat[0])[0][0]
-        oklon_GOFS = np.where(ln_GOFS >= argo_lon[0]+360)[0][0]
-        temp_GOFS = np.asarray(GOFS_ts['water_temp'][oktt_GOFS,:,oklat_GOFS,oklon_GOFS])
-        salt_GOFS = np.asarray(GOFS_ts['salinity'][oktt_GOFS,:,oklat_GOFS,oklon_GOFS])
+        if isinstance(GOFS_ts,float): 
+            temp_GOFS = np.nan
+            salt_GOFS = np.nan
+        else:
+            oktt_GOFS = np.where(t_GOFS >= argo_time[0])[0][0]
+            oklat_GOFS = np.where(lt_GOFS >= argo_lat[0])[0][0]
+            oklon_GOFS = np.where(ln_GOFS >= argo_lon[0]+360)[0][0]
+            temp_GOFS = np.asarray(GOFS_ts['water_temp'][oktt_GOFS,:,oklat_GOFS,oklon_GOFS])
         
-        # RTOFS
+        # RTOFS 
         #Time window
         year = int(argo_time[0].year)
         month = int(argo_time[0].month)
