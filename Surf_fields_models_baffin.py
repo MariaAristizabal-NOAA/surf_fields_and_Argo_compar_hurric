@@ -235,17 +235,22 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     
     #%% Figure temp transect along storm path
 
-    lon_forec_track_interp = np.interp(lat_GOFS,lat_forec_track,lon_forec_track)
-    lat_forec_track_interp = lat_GOFS
+    lon_forec_track_interp = np.interp(lt_GOFS,lat_forec_track,lon_forec_track,left=np.nan,right=np.nan)
+    lat_forec_track_interp = np.copy(lt_GOFS)
+    lat_forec_track_interp[np.isnan(lon_forec_track_interp)] = np.nan
     
-    oklon = np.round(np.interp(lon_forec_track_interp+360,ln_GOFS,np.arange(len(ln_GOFS)))).astype(int)
-    oklat = np.round(np.interp(lat_forec_track_interp,lt_GOFSg,np.arange(len(lt_GOFSg)))).astype(int)
-    okdepth = np.where(depth_GOFS <= 300)[0]
+    lon_forec_track_int = lon_forec_track_interp[np.isfinite(lon_forec_track_interp)]
+    lat_forec_track_int = lat_forec_track_interp[np.isfinite(lat_forec_track_interp)]
     
-    trans_temp_GOFS = np.empty((len(depth_GOFS[okdepth]),len(lon_forec_track_interp)))
+    oklon = np.round(np.interp(lon_forec_track_int+360,ln_GOFS,np.arange(len(ln_GOFS)))).astype(int)
+    oklat = np.round(np.interp(lat_forec_track_int,lt_GOFS,np.arange(len(lt_GOFS)))).astype(int)
+    okdepth = np.where(depth_GOFS <= 350)[0]
+    
+    i=0
+    trans_temp_GOFS = np.empty((len(depth_GOFS[okdepth]),len(lon_forec_track_int)))
     trans_temp_GOFS[:] = np.nan
-    for i in np.arange(len(lon_forec_track_interp)):
-        trans_temp_GOFS[:,i] = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,okdepth,oklat[i],oklon[i]])
+    for x in np.arange(len(lon_forec_track_int)):
+        trans_temp_GOFS[:,x] = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,okdepth,oklat[x],oklon[x]])
     
     kw = dict(levels = np.linspace(12,32,21))
     
@@ -257,12 +262,10 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14)
     cbar.ax.tick_params(labelsize=14)
     plt.title('GOFS Temperature \n along Forecasted Storm Track',fontsize=16)
-    #plt.ylim([max_depth,0])
-    #plt.xlim([20,30])
     
     file = folder_fig + 'GOFS_temp_along_forecasted_track_'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
-    
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
 def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
@@ -466,19 +469,23 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     
     #%% Figure temp transect along storm path
     
-    lon_forec_track_interp = np.interp(lat_RTOFS,lat_forec_track,lon_forec_track)
-    lat_forec_track_interp = lat_RTOFS
+    lon_forec_track_interp = np.interp(latRTOFS[:,0],lat_forec_track,lon_forec_track,left=np.nan,right=np.nan)
+    lat_forec_track_interp = np.copy(latRTOFS[:,0])
+    lat_forec_track_interp[np.isnan(lon_forec_track_interp)] = np.nan
     
-    oklon = np.round(np.interp(lon_forec_track_interp,lonRTOFS[0,:],np.arange(len(lonRTOFS[0,:])))).astype(int)
-    oklat = np.round(np.interp(lat_forec_track_interp,latRTOFS[:,0],np.arange(len(latRTOFS[:,0])))).astype(int)
-    okdepth = np.where(depth_RTOFS <= 300)[0]
+    lon_forec_track_int = lon_forec_track_interp[np.isfinite(lon_forec_track_interp)]
+    lat_forec_track_int = lat_forec_track_interp[np.isfinite(lat_forec_track_interp)]
+    
+    oklon = np.round(np.interp(lon_forec_track_int,lonRTOFS[0,:],np.arange(len(lonRTOFS[0,:])))).astype(int)
+    oklat = np.round(np.interp(lat_forec_track_int,latRTOFS[:,0],np.arange(len(latRTOFS[:,0])))).astype(int)
+    okdepth = np.where(depth_RTOFS <= 350)[0]
     
     i=0
-    trans_temp_RTOFS = np.empty((len(depth_RTOFS[okdepth]),len(lon_forec_track_interp)))
+    trans_temp_RTOFS = np.empty((len(depth_RTOFS[okdepth]),len(lon_forec_track_int)))
     trans_temp_RTOFS[:] = np.nan
-    for x in np.arange(len(lon_forec_track_interp)):
+    for x in np.arange(len(lon_forec_track_int)):
         trans_temp_RTOFS[:,x] = np.asarray(ncRTOFS.variables['temperature'][i,okdepth,oklat[x],oklon[x]])
-        
+       
     kw = dict(levels = np.linspace(12,32,21))
     
     plt.figure()
@@ -489,9 +496,275 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14)
     cbar.ax.tick_params(labelsize=14)
     plt.title('RTOFS Temperature \n along Forecasted Storm Track',fontsize=16)
-    #plt.ylim([max_depth,0])
-    #plt.xlim([20,30])
     
     file = folder_fig + 'RTOFS_temp_along_forecasted_track_'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
+   
+#%%%%%%%%%%%%%%%%%%%%
+def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
+    
+    #%%
+    
+    # COPERNICUS MARINE ENVIRONMENT MONITORING SERVICE (CMEMS)
+    url_cmems = 'http://nrt.cmems-du.eu/motu-web/Motu'
+    service_id = 'GLOBAL_ANALYSIS_FORECAST_PHY_001_024-TDS'
+    product_id = 'global-analysis-forecast-phy-001-024'
+    depth_min = '0.493'
+    out_dir = '/home/aristizabal/crontab_jobs'
+        
+    # Bathymetry file
+    #bath_file = '/Users/aristizabal/Desktop/MARACOOS_project/Maria_scripts/nc_files/GEBCO_2014_2D_-100.0_0.0_-60.0_45.0.nc'    
+    bath_file = '/home/aristizabal/bathymetry_files/GEBCO_2014_2D_-100.0_0.0_-10.0_50.0.nc'
+    
+    #%%
+    
+    from matplotlib import pyplot as plt
+    import numpy as np
+    import xarray as xr
+    from datetime import datetime, timedelta
+    import cmocean
+    import os
+    import netCDF4
+    
+    # Do not produce figures on screen
+    plt.switch_backend('agg')
+    
+    # Increase fontsize of labels globally
+    plt.rc('xtick',labelsize=14)
+    plt.rc('ytick',labelsize=14)
+    plt.rc('legend',fontsize=14)
+    
+    #%% Reading bathymetry data
+    
+    ncbath = xr.open_dataset(bath_file)
+    bath_lat = ncbath.variables['lat'][:]
+    bath_lon = ncbath.variables['lon'][:]
+    bath_elev = ncbath.variables['elevation'][:]
+    
+    oklatbath = np.logical_and(bath_lat >= lat_lim[0],bath_lat <= lat_lim[-1])
+    oklonbath = np.logical_and(bath_lon >= lon_lim[0],bath_lon <= lon_lim[-1])
+    
+    bath_latsub = bath_lat[oklatbath]
+    bath_lonsub = bath_lon[oklonbath]
+    bath_elevs = bath_elev[oklatbath,:]
+    bath_elevsub = bath_elevs[:,oklonbath]  
+    
+    #%% Get time bounds for the previous day
+    te = datetime.today()
+    tend = datetime(te.year,te.month,te.day)
+    
+    ti = datetime.today() - timedelta(1)
+    tini = datetime(ti.year,ti.month,ti.day)
+    
+    #%% Downloading and reading Copernicus output
+       
+    motuc = 'python -m motuclient --motu ' + url_cmems + \
+        ' --service-id ' + service_id + \
+        ' --product-id ' + product_id + \
+        ' --longitude-min ' + str(lon_lim[0]-2/12) + \
+        ' --longitude-max ' + str(lon_lim[1]+2/12) + \
+        ' --latitude-min ' + str(lat_lim[0]-2/12) + \
+        ' --latitude-max ' + str(lat_lim[1]+2/12) + \
+        ' --date-min ' + str(tini-timedelta(0.5)) + \
+        ' --date-max ' + str(tend+timedelta(0.5)) + \
+        ' --depth-min ' + depth_min + \
+        ' --depth-max ' + '350' + \
+        ' --variable ' + 'thetao' + \
+        ' --variable ' + 'so' + \
+        ' --variable ' + 'zos' + \
+        ' --variable ' + 'uo' + \
+        ' --variable ' + 'vo' + \
+        ' --out-dir ' + out_dir + \
+        ' --out-name ' + folder_fig.split('/')[-2] + '.nc' + ' ' + \
+        ' --user ' + 'maristizabalvar' + ' ' + \
+        ' --pwd ' +  'MariaCMEMS2018'
+        
+    os.system(motuc)
+    # Check if file was downloaded
 
+    COP_file = out_dir + '/' + folder_fig.split('/')[-2] + '.nc'
+    # Check if file was downloaded
+    resp = os.system('ls ' + out_dir +'/' + folder_fig.split('/')[-2] + '.nc')
+    if resp == 0:
+        COP = xr.open_dataset(COP_file,decode_times=False)
+
+        lat_COP = np.asarray(COP.latitude[:])
+        lon_COP = np.asarray(COP.longitude[:])
+        depth_COP = np.asarray(COP.depth[:])
+        tt = COP.time[:]
+        tCOP = netCDF4.num2date(tt[:],tt.units) 
+        
+        oktimeCOP = np.where(tCOP >= tini)[0][0]    
+        time_COP = tCOP[oktimeCOP]
+        sst_COP = np.asarray(COP.variables['thetao'][oktimeCOP,0,:,:])
+        sss_COP = np.asarray(COP.variables['so'][oktimeCOP,0,:,:])
+        ssh_COP = np.asarray(COP.variables['zos'][oktimeCOP,:,:])
+        su_COP = np.asarray(COP.variables['uo'][oktimeCOP,0,:,:])
+        sv_COP = np.asarray(COP.variables['vo'][oktimeCOP,0,:,:])
+    else:
+        lat_COP = np.empty(1)
+        lat_COP[:] = np.nan
+        lon_COP = np.empty(1)
+        lon_COP[:] = np.nan
+        time_COP = np.empty(1)
+        time_COP[:] = np.nan
+        sst_COP = np.empty(1)
+        sst_COP[:] = np.nan
+        sss_COP = np.empty(1)
+        sss_COP[:] = np.nan
+    
+    #%% SST
+    
+    kw = dict(levels = np.linspace(24,30,16))
+    
+    fig, ax = plt.subplots()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,sst_COP,cmap=cmocean.cm.thermal)#,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=14)
+    cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus SST on '+str(time_COP)[0:13],fontsize=16)
+        
+    file = folder_fig +'COP_SST'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+    
+    #%% SSS
+    
+    kw = dict(levels = np.linspace(30,37,15))
+    
+    fig, ax = plt.subplots()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,sss_COP,cmap=cmocean.cm.haline,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=14)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus SSS on '+str(time_COP)[0:13],fontsize=16)
+        
+    file = folder_fig +'COP_SSS'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+    
+    #%% Figure ssh
+    
+    max_val = np.round(np.max([np.abs(np.nanmin(ssh_COP)),np.nanmax(ssh_COP)]),1)
+    kw = dict(levels = np.arange(-max_val,max_val+0.1,0.1))
+    
+    plt.figure()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,ssh_COP,cmap=cmocean.cm.curl,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=14)
+    cbar.ax.set_ylabel('meters',fontsize=14) 
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus SSH on '+str(time_COP)[0:13],fontsize=16)
+    
+    file = folder_fig + 'COP_SSH'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+    
+    #%% Figure ssh
+    
+    max_val = np.round(np.max([np.abs(np.nanmin(ssh_COP)),np.nanmax(ssh_COP)]),1)
+    kw = dict(levels = np.arange(-max_val,max_val+0.1,0.1))
+    
+    plt.figure()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,ssh_COP,cmap=cmocean.cm.curl,**kw)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=14)
+    cbar.ax.set_ylabel('meters',fontsize=14) 
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus SSH on '+str(time_COP)[0:13],fontsize=16)
+    q=plt.quiver(lon_COP[::5],lat_COP[::5],su_COP[::5,::5],sv_COP[::5,::5] ,scale=3,scale_units='inches',\
+              alpha=0.7)
+    plt.quiverkey(q,np.max(lon_COP)-0.3,np.max(lat_COP)+1,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    
+    file = folder_fig + 'COP_SSH_UV'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+    
+    #%% Figure temp at 200 meters
+    
+    kw = dict(levels = np.linspace(10,25,31))
+    okdepth = np.where(depth_COP >= 200)[0][0]
+    temp_200_COP = np.asarray(COP.variables['thetao'][oktimeCOP,okdepth,:,:])
+    
+    plt.figure()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,temp_200_COP,cmap=cmocean.cm.thermal)#,**kw)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=16)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus Temperature at 200 m \n on '+str(time_COP)[0:13],fontsize=16)
+    
+    file = folder_fig + 'COP_temp_at_200m'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+    
+    #%% Figure salinity at 200 meters
+    
+    okdepth = np.where(depth_COP >= 200)[0][0]
+    salt_200_COP = np.asarray(COP.variables['so'][oktimeCOP,okdepth,:,:])
+    
+    plt.figure()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,salt_200_COP,cmap=cmocean.cm.haline)#,**kw)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=16)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus Salinity at 200 m \n on '+str(time_COP)[0:13],fontsize=16)
+    
+    file = folder_fig + 'COP_salt_200m'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+    
+    #%% Figure temp transect along storm path
+
+    lon_forec_track_interp = np.interp(lat_COP,lat_forec_track,lon_forec_track,left=np.nan,right=np.nan)
+    lat_forec_track_interp = np.copy(lat_COP)
+    lat_forec_track_interp[np.isnan(lon_forec_track_interp)] = np.nan
+    
+    lon_forec_track_int = lon_forec_track_interp[np.isfinite(lon_forec_track_interp)]
+    lat_forec_track_int = lat_forec_track_interp[np.isfinite(lat_forec_track_interp)]
+    
+    oklon = np.round(np.interp(lon_forec_track_int,lon_COP,np.arange(len(lon_COP)))).astype(int)
+    oklat = np.round(np.interp(lat_forec_track_int,lat_COP,np.arange(len(lat_COP)))).astype(int)
+    okdepth = np.where(depth_COP <= 350)[0]
+    
+    trans_temp_GOFS = np.empty((len(depth_COP[okdepth]),len(lon_forec_track_int)))
+    trans_temp_GOFS[:] = np.nan
+    for i in np.arange(len(lon_forec_track_int)):
+        trans_temp_GOFS[:,i] = np.asarray(COP['thetao'][oktimeCOP,okdepth,oklat[i],oklon[i]])
+    
+    kw = dict(levels = np.linspace(12,32,21))
+    
+    plt.figure()
+    plt.contourf(lat_COP[oklat],-depth_COP[okdepth],trans_temp_GOFS,cmap=cmocean.cm.thermal)#,**kw)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=16)
+    plt.contour(lat_COP[oklat],-depth_COP[okdepth],trans_temp_GOFS,[26],color='k')
+    cbar.ax.set_ylabel('($^\circ$C)',fontsize=14)
+    cbar.ax.tick_params(labelsize=14)
+    plt.title('Copernicus Temperature \n along Forecasted Storm Track',fontsize=16)
+
+    file = folder_fig + 'COP_temp_along_forecasted_track_'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
+
+    

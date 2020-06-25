@@ -98,12 +98,12 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     search = pd.read_csv(search_url)
     
     # Extract the IDs
-    argo_floats = search['Dataset ID'].values
+    dataset = search['Dataset ID'].values
     
     msg = 'Found {} Datasets:\n\n{}'.format
-    print(msg(len(argo_floats), '\n'.join(argo_floats)))
+    print(msg(len(dataset), '\n'.join(dataset)))
     
-    dataset_type = argo_floats[0]
+    dataset_type = dataset[0]
     
     constraints = {
         'time>=': str(tini),
@@ -192,6 +192,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     argo_idd = np.unique(argo_ids)
     
     for i,id in enumerate(argo_idd): 
+        print(id)
         okind = np.where(argo_ids == id)[0]
         argo_time = np.asarray([datetime.strptime(t,'%Y-%m-%dT%H:%M:%SZ') for t in argo_times[okind]])
         
@@ -211,6 +212,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
             oklat_GOFS = np.where(lt_GOFS >= argo_lat[0])[0][0]
             oklon_GOFS = np.where(ln_GOFS >= argo_lon[0]+360)[0][0]
             temp_GOFS = np.asarray(GOFS_ts['water_temp'][oktt_GOFS,:,oklat_GOFS,oklon_GOFS])
+            salt_GOFS = np.asarray(GOFS_ts['salinity'][oktt_GOFS,:,oklat_GOFS,oklon_GOFS])
         
         # RTOFS 
         #Time window
@@ -299,9 +301,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
             tCOP = np.empty(1)
             tCOP[:] = np.nan
 
-        tmin = tini
-
-        oktimeCOP = np.where(mdates.date2num(tCOP) >= mdates.date2num(tmin))[0][0]
+        oktimeCOP = np.where(mdates.date2num(tCOP) >= mdates.date2num(tini))[0][0]
         oklonCOP = np.where(lonCOP >= argo_lon[0])[0][0]
         oklatCOP = np.where(latCOP >= argo_lat[0])[0][0]
         

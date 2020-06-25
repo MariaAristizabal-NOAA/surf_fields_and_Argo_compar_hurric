@@ -44,7 +44,7 @@ import sys
 
 sys.path.append('/home/aristizabal/Code/surf_fields_and_Argo_compar_hurric')
 
-from Surf_fields_models_baffin import GOFS31_baffin, RTOFS_oper_baffin
+from Surf_fields_models_baffin import GOFS31_baffin, RTOFS_oper_baffin, Copernicus_baffin
 from GOFS_RTOFS_oper_vs_Argo_floats_baffin import GOFS_RTOFS_vs_Argo_floats
 
 #%% Get time bounds for the previous day
@@ -163,13 +163,13 @@ for i,f in enumerate(zip_files):
                     name = f.get_text('name')
                     
 #%% 
-'''
-name = 'Cristobal'
+name = '03l2020 Cristobal'
 
 lon_forec_track = np.asarray([-90,-91.1,-90,-91.3,-91.1,-91.2,-91.5,-92.0,-92.5,-93,\
                    -93.3,-92.5,-92.5,-92.4,-92.1,-91.1,-90.0])
 lat_forec_track = np.arange(16,33,1)
-'''
+
+
 if np.logical_and(np.mean(lon_forec_track) >= lon_lim_GoMex[0],\
                   np.mean(lon_forec_track) <= lon_lim_GoMex[1]):
     if np.logical_and(np.mean(lat_forec_track) >= lat_lim_GoMex[0],\
@@ -223,5 +223,11 @@ if np.logical_and(len(name) != 0,len(lon_lim) != 0):
     try:
         print('Reading GOFS 3.1')
         GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
+    except Exception as err:
+        print(err) 
+
+    try:
+        print('Reading Copernicus')
+        Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
     except Exception as err:
         print(err) 
