@@ -24,7 +24,7 @@ lat_lim_SAB = [25,36]
 # MAB
 #lon_lim_MAB = [-77,-64]
 #lat_lim_MAB = [35,42]
-lon_lim_MAB = [-77,-55]
+lon_lim_MAB = [-77,-52]
 lat_lim_MAB = [35,46]
 
 lon_lim = []
@@ -163,38 +163,39 @@ for i,f in enumerate(zip_files):
                     name = f.get_text('name')
                     
 #%% 
+'''
 name = '03l2020 Cristobal'
 
 lon_forec_track = np.asarray([-90,-91.1,-90,-91.3,-91.1,-91.2,-91.5,-92.0,-92.5,-93,\
                    -93.3,-92.5,-92.5,-92.4,-92.1,-91.1,-90.0])
 lat_forec_track = np.arange(16,33,1)
+'''
 
-
-if np.logical_and(np.mean(lon_forec_track) >= lon_lim_GoMex[0],\
-                  np.mean(lon_forec_track) <= lon_lim_GoMex[1]):
-    if np.logical_and(np.mean(lat_forec_track) >= lat_lim_GoMex[0],\
-                  np.mean(lat_forec_track) <= lat_lim_GoMex[1]):
+if np.logical_and(np.min(lon_forec_track) >= lon_lim_GoMex[0],\
+                  np.min(lon_forec_track) <= lon_lim_GoMex[1]):
+    if np.logical_and(np.min(lat_forec_track) >= lat_lim_GoMex[0],\
+                  np.min(lat_forec_track) <= lat_lim_GoMex[1]):
         lon_lim = lon_lim_GoMex
         lat_lim = lat_lim_GoMex
         
-if np.logical_and(np.mean(lon_forec_track) >= lon_lim_Car[0],\
-                  np.mean(lon_forec_track) <= lon_lim_Car[1]):
-    if np.logical_and(np.mean(lat_forec_track) >= lat_lim_Car[0],\
-                  np.mean(lat_forec_track) <= lat_lim_Car[1]):
+if np.logical_and(np.min(lon_forec_track) >= lon_lim_Car[0],\
+                  np.min(lon_forec_track) <= lon_lim_Car[1]):
+    if np.logical_and(np.min(lat_forec_track) >= lat_lim_Car[0],\
+                  np.min(lat_forec_track) <= lat_lim_Car[1]):
         lon_lim = lon_lim_Car
         lat_lim = lat_lim_Car  
         
-if np.logical_and(np.mean(lon_forec_track) >= lon_lim_SAB[0],\
-                  np.mean(lon_forec_track) <= lon_lim_SAB[1]):
-    if np.logical_and(np.mean(lat_forec_track) >= lat_lim_SAB[0],\
-                  np.mean(lat_forec_track) <= lat_lim_SAB[1]):
+if np.logical_and(np.min(lon_forec_track) >= lon_lim_SAB[0],\
+                  np.min(lon_forec_track) <= lon_lim_SAB[1]):
+    if np.logical_and(np.min(lat_forec_track) >= lat_lim_SAB[0],\
+                  np.min(lat_forec_track) <= lat_lim_SAB[1]):
         lon_lim = lon_lim_SAB
         lat_lim = lat_lim_SAB 
         
-if np.logical_and(np.mean(lon_forec_track) >= lon_lim_MAB[0],\
-                  np.mean(lon_forec_track) <= lon_lim_MAB[1]):
-    if np.logical_and(np.mean(lat_forec_track) >= lat_lim_MAB[0],\
-                  np.mean(lat_forec_track) <= lat_lim_MAB[1]):
+if np.logical_and(np.min(lon_forec_track) >= lon_lim_MAB[0],\
+                  np.min(lon_forec_track) <= lon_lim_MAB[1]):
+    if np.logical_and(np.min(lat_forec_track) >= lat_lim_MAB[0],\
+                  np.min(lat_forec_track) <= lat_lim_MAB[1]):
         lon_lim = lon_lim_MAB
         lat_lim = lat_lim_MAB 
 
