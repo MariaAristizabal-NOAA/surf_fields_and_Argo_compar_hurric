@@ -232,6 +232,25 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     
     file = folder_fig + 'GOFS_salt_200m'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+
+    #%% Figure bottom temp 
+    
+    kw = dict(levels = np.arange(0,28,1))
+    temp_bott_GOFS = np.asarray(GOFS_ts['water_temp_bottom'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
+    
+    plt.figure()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_GOFSg,lat_GOFSg,temp_bott_GOFS,cmap=cmocean.cm.thermal,**kw)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=16)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('GOFS Bottom Temperature \n on '+str(time_GOFS)[0:13],fontsize=16)
+    
+    file = folder_fig + 'GOFS_temp_bott'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure temp transect along storm path
 
@@ -466,6 +485,36 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     
     file = folder_fig + 'RTOFS_salt_at_200m'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+
+    #%% Figure temp bottom 
+    
+    temp_RTOFS = np.asarray(ncRTOFS.variables['temperature'][i,:,oklatRTOFS,oklonRTOFS])
+    
+    temp_bott_RTOFS = np.empty((temp_RTOFS.shape[1],temp_RTOFS.shape[2]))
+    temp_bott_RTOFS[:] = np.nan
+    for x in np.arange(temp_RTOFS.shape[1]):
+        for y in np.arange(temp_RTOFS.shape[2]):
+            okb = np.where(np.isfinite(temp_RTOFS[:,x,y]))[0]
+            if len(okb) != 0:
+                temp_bott_RTOFS[x,y] = temp_RTOFS[okb[-1],x,y]
+            else:
+                temp_bott_RTOFS[x,y] = np.nan
+                
+    kw = dict(levels = np.arange(0,28,1))
+    plt.figure()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_RTOFS,lat_RTOFS,temp_bott_RTOFS,cmap=cmocean.cm.thermal,**kw)
+    cbar = plt.colorbar()
+    cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
+    cbar.ax.tick_params(labelsize=16)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('RTOFS Bottom Temperature \n on '+str(time_RTOFS)[0:13],fontsize=16)
+    
+    file = folder_fig + 'RTOFS_temp_bott'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure temp transect along storm path
     
@@ -574,6 +623,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
         ' --variable ' + 'zos' + \
         ' --variable ' + 'uo' + \
         ' --variable ' + 'vo' + \
+        ' --variable ' + 'bottomT' + \
         ' --out-dir ' + out_dir + \
         ' --out-name ' + folder_fig.split('/')[-2] + '.nc' + ' ' + \
         ' --user ' + 'maristizabalvar' + ' ' + \
