@@ -235,7 +235,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
 
     #%% Figure bottom temp 
     
-    kw = dict(levels = np.arange(0,28,1))
+    kw = dict(levels = np.arange(0,np.nanmax(temp_bott_GOFS),1))
     temp_bott_GOFS = np.asarray(GOFS_ts['water_temp_bottom'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
     
     plt.figure()
@@ -500,7 +500,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
             else:
                 temp_bott_RTOFS[x,y] = np.nan
                 
-    kw = dict(levels = np.arange(0,28,1))
+    kw = dict(levels = np.arange(0,np.nanmax(temp_bott_RTOFS),1))
     plt.figure()
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
@@ -651,6 +651,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
         ssh_COP = np.asarray(COP.variables['zos'][oktimeCOP,:,:])
         su_COP = np.asarray(COP.variables['uo'][oktimeCOP,0,:,:])
         sv_COP = np.asarray(COP.variables['vo'][oktimeCOP,0,:,:])
+        temp_bott_COP = np.asarray(COP.variables['bottomT'][oktimeCOP,:,:])
     else:
         lat_COP = np.empty(1)
         lat_COP[:] = np.nan
@@ -662,6 +663,14 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
         sst_COP[:] = np.nan
         sss_COP = np.empty(1)
         sss_COP[:] = np.nan
+        ssh_COP = np.empty(1)
+        ssh_COP[:] = np.nan
+        su_COP = np.empty(1)
+        su_COP[:] = np.nan
+        sv_COP = np.empty(1)
+        sv_COP[:] = np.nan
+        temp_bott_COP = np.empty(1)
+        temp_bott_COP[:] = np.nan
     
     #%% SST
     
@@ -784,6 +793,26 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     
     file = folder_fig + 'COP_salt_200m'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
+
+    #%% Bottom temperature
+
+    kw = dict(levels = np.arange(0,np.nanmax(temp_bott_COP),1))
+
+    fig, ax = plt.subplots()
+    plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
+    plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contourf(lon_COP,lat_COP,temp_bott_COP,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=14)
+    cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
+    plt.axis('scaled')
+    plt.xlim(lon_lim[0],lon_lim[1])
+    plt.ylim(lat_lim[0],lat_lim[1])
+    plt.title('Copernicus Bottom Temperature on '+str(time_COP)[0:13],fontsize=16)
+
+    file = folder_fig +'COP_temp_bott'
+    plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
     
     #%% Figure temp transect along storm path
 
@@ -814,7 +843,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     cbar.ax.tick_params(labelsize=14)
     plt.title('Copernicus Temperature \n along Forecasted Storm Track',fontsize=16)
 
-    file = folder_fig + 'COP_temp_along_forecasted_track_'
+    file = folder_fig + 'COP_temp_along_forecasted_track'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
 
     
