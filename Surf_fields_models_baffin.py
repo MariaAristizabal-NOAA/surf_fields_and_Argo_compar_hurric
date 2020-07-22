@@ -14,15 +14,11 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     url_GOFS_uv = 'https://tds.hycom.org/thredds/dodsC/GLBy0.08/expt_93.0/uv3z'
     
     url_GOFS_ssh = 'https://tds.hycom.org/thredds/dodsC/GLBy0.08/expt_93.0/ssh'
-    #https://tds.hycom.org/thredds/dodsC/GLBy0.08/expt_93.0/ssh
     
-    # Bathymetry file
-    #bath_file = '/Users/aristizabal/Desktop/MARACOOS_project/Maria_scripts/nc_files/GEBCO_2014_2D_-100.0_0.0_-60.0_45.0.nc'
     # Bathymetry file
     bath_file = '/home/aristizabal/bathymetry_files/GEBCO_2014_2D_-100.0_0.0_-10.0_50.0.nc'
     
     #%%
-    
     from matplotlib import pyplot as plt
     import numpy as np
     import xarray as xr
@@ -39,14 +35,10 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.rc('legend',fontsize=14)
     
     #%% Get time bounds for the previous day
-    #te = datetime.today()
-    #tend = datetime(te.year,te.month,te.day)
-    
     ti = datetime.today() - timedelta(1)
     tini = datetime(ti.year,ti.month,ti.day,6)
     
     #%% GOGF 3.1
-    
     GOFS_ts = xr.open_dataset(url_GOFS_ts,decode_times=False)
     GOFS_uv = xr.open_dataset(url_GOFS_uv,decode_times=False)
     GOFS_ssh = xr.open_dataset(url_GOFS_ssh,decode_times=False)
@@ -82,14 +74,12 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
             ln_GOFSg[i] = ln_GOFS[i]
     lt_GOFSg = lt_GOFS
     
-    #lon_GOFS= ln_GOFS[oklon_GOFS]
     lat_GOFS= lt_GOFS[oklat_GOFS]
     lon_GOFSg= ln_GOFSg[oklon_GOFS]
     lat_GOFSg= lt_GOFSg[oklat_GOFS]
     time_GOFS = t_GOFS[oktime_GOFS]
        
     #%% Reading bathymetry data
-    
     ncbath = xr.open_dataset(bath_file)
     bath_lat = ncbath.variables['lat'][:]
     bath_lon = ncbath.variables['lon'][:]
@@ -104,15 +94,13 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     bath_elevsub = bath_elevs[:,oklonbath]  
     
     #%% loading surface temperature and salinity
-    
     sst_GOFS = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
     sss_GOFS = np.asarray(GOFS_ts['salinity'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
     ssh_GOFS = np.asarray(GOFS_ssh['surf_el'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
     su_GOFS = np.asarray(GOFS_uv['water_u'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
     sv_GOFS = np.asarray(GOFS_uv['water_v'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
 
-        #%% Figure sst
-    
+    #%% Figure sst
     kw = dict(levels = np.linspace(24,30,16))
     
     plt.figure()
@@ -126,13 +114,12 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('GOFS SST on '+str(time_GOFS)[0:13],fontsize=16)
+    plt.title('GOFS SST \n on '+str(time_GOFS)[0:13],fontsize=16)
     
     file = folder_fig +'GOFS_SST'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure sss
-    
     kw = dict(levels = np.linspace(30,37,15))
     
     plt.figure()
@@ -145,13 +132,12 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('GOFS SSS on '+str(time_GOFS)[0:13],fontsize=16)
+    plt.title('GOFS SSS \n on '+str(time_GOFS)[0:13],fontsize=16)
     
     file = folder_fig + 'GOFS_SSS'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure ssh
-    
     max_val = np.round(np.max([np.abs(np.nanmin(ssh_GOFS)),np.nanmax(ssh_GOFS)]),1)
     kw = dict(levels = np.arange(-max_val,max_val,0.1))
     
@@ -166,13 +152,12 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('GOFS SSH on '+str(time_GOFS)[0:13],fontsize=16)
+    plt.title('GOFS SSH \n on '+str(time_GOFS)[0:13],fontsize=16)
     
     file = folder_fig + 'GOFS_SSH'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure ssh
-    
     max_val = np.round(np.max([np.abs(np.nanmin(ssh_GOFS)),np.nanmax(ssh_GOFS)]),1)
     kw = dict(levels = np.arange(-max_val,max_val,0.1))
     
@@ -186,16 +171,15 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('GOFS SSH on '+str(time_GOFS)[0:13],fontsize=16)
+    plt.title('GOFS SSH \n on '+str(time_GOFS)[0:13],fontsize=16)
     q=plt.quiver(lon_GOFSg[::5],lat_GOFSg[::5],su_GOFS[::5,::5],sv_GOFS[::5,::5] ,scale=3,scale_units='inches',\
               alpha=0.7)
-    plt.quiverkey(q,np.max(lon_GOFSg)-0.3,np.max(lat_GOFSg)+1,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    plt.quiverkey(q,np.max(lon_GOFSg)-0.3,np.max(lat_GOFSg)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
     
     file = folder_fig + 'GOFS_SSH_UV'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure temp at 200 meters
-    
     kw = dict(levels = np.linspace(10,25,31))
     okdepth = np.where(depth_GOFS >= 200)[0][0]
     temp_200_GOFS = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,okdepth,oklat_GOFS,oklon_GOFS])
@@ -215,7 +199,6 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure salinity at 200 meters
-    
     okdepth = np.where(depth_GOFS >= 200)[0][0]
     salt_200_GOFS = np.asarray(GOFS_ts['salinity'][oktime_GOFS,okdepth,oklat_GOFS,oklon_GOFS])
     
@@ -234,7 +217,6 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
 
     #%% Figure bottom temp 
-    
     temp_bott_GOFS = np.asarray(GOFS_ts['water_temp_bottom'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
     kw = dict(levels = np.arange(0,np.nanmax(temp_bott_GOFS),1))
     
@@ -253,7 +235,6 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure temp transect along storm path
-
     lon_forec_track_interp = np.interp(lt_GOFS,lat_forec_track,lon_forec_track,left=np.nan,right=np.nan)
     lat_forec_track_interp = np.copy(lt_GOFS)
     lat_forec_track_interp[np.isnan(lon_forec_track_interp)] = np.nan
@@ -328,14 +309,10 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     bath_elevsub = bath_elevs[:,oklonbath]  
     
     #%% Get time bounds for the previous day
-    #te = datetime.today()
-    #tend = datetime(te.year,te.month,te.day)
-    
     ti = datetime.today() - timedelta(1)
     tini = datetime(ti.year,ti.month,ti.day)
     
     #%% Time window
-    
     year = int(tini.year)
     month = int(tini.month)
     day = int(tini.day)
@@ -370,7 +347,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
               for t in np.arange(len(nc_files_RTOFS))])
     
     #%% Get RTOFS fields
-    
     oklonRTOFS = np.where(np.logical_and(lonRTOFS[0,:] >= lon_lim[0],lonRTOFS[0,:] <= lon_lim[1]))[0]
     oklatRTOFS = np.where(np.logical_and(latRTOFS[:,0] >= lat_lim[0],latRTOFS[:,0] <= lat_lim[1]))[0]
     
@@ -386,7 +362,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     sv_RTOFS = np.asarray(ncRTOFS.variables['v'][i,0,oklatRTOFS,oklonRTOFS])
 
     #%% SST
-    
     kw = dict(levels = np.linspace(24,30,16))
     
     fig, ax = plt.subplots()
@@ -400,13 +375,12 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('RTOFS Oper. SST on '+str(time_RTOFS)[0:13],fontsize=16)
+    plt.title('RTOFS Oper. SST \n on '+str(time_RTOFS)[0:13],fontsize=16)
         
     file = folder_fig +'RTOFS_SST'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% SSS
-    
     kw = dict(levels = np.linspace(30,37,15))
     
     fig, ax = plt.subplots()
@@ -419,13 +393,12 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('RTOFS Oper. SSS on '+str(time_RTOFS)[0:13],fontsize=16)
+    plt.title('RTOFS Oper. SSS \n on '+str(time_RTOFS)[0:13],fontsize=16)
         
     file = folder_fig +'RTOFS_SSS'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
-    #%% Surfeace velocity
-    
+    #%% Surface velocity
     kw = dict(levels = np.linspace(24,30,16))
     
     plt.figure()
@@ -438,16 +411,15 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('RTOFS SST on '+str(time_RTOFS)[0:13],fontsize=16)
+    plt.title('RTOFS SST \n on '+str(time_RTOFS)[0:13],fontsize=16)
     q=plt.quiver(lon_RTOFS[::5],lat_RTOFS[::5],su_RTOFS[::5,::5],sv_RTOFS[::5,::5] ,scale=3,scale_units='inches',\
               alpha=0.7)
-    plt.quiverkey(q,np.max(lon_RTOFS)-0.3,np.max(lat_RTOFS)+1.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    plt.quiverkey(q,np.max(lon_RTOFS)-0.3,np.max(lat_RTOFS)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
     
     file = folder_fig + 'RTOFS_SST_UV'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure sst at 200 meters
-    
     okdepth = np.where(depth_RTOFS >= 200)[0][0]
     temp_200_RTOFS = np.asarray(ncRTOFS.variables['temperature'][i,okdepth,oklatRTOFS,oklonRTOFS])
     
@@ -468,7 +440,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure sss at 200 meters
-    
     okdepth = np.where(depth_RTOFS >= 200)[0][0]
     salt_200_RTOFS = np.asarray(ncRTOFS.variables['salinity'][i,okdepth,oklatRTOFS,oklonRTOFS])
     
@@ -487,7 +458,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
 
     #%% Figure temp bottom 
-    
     temp_RTOFS = np.asarray(ncRTOFS.variables['temperature'][i,:,oklatRTOFS,oklonRTOFS])
     
     temp_bott_RTOFS = np.empty((temp_RTOFS.shape[1],temp_RTOFS.shape[2]))
@@ -517,7 +487,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure temp transect along storm path
-    
     lon_forec_track_interp = np.interp(latRTOFS[:,0],lat_forec_track,lon_forec_track,left=np.nan,right=np.nan)
     lat_forec_track_interp = np.copy(latRTOFS[:,0])
     lat_forec_track_interp[np.isnan(lon_forec_track_interp)] = np.nan
@@ -553,7 +522,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
 def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     
     #%%
-    
     # COPERNICUS MARINE ENVIRONMENT MONITORING SERVICE (CMEMS)
     url_cmems = 'http://nrt.cmems-du.eu/motu-web/Motu'
     service_id = 'GLOBAL_ANALYSIS_FORECAST_PHY_001_024-TDS'
@@ -562,11 +530,9 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     out_dir = '/home/aristizabal/crontab_jobs'
         
     # Bathymetry file
-    #bath_file = '/Users/aristizabal/Desktop/MARACOOS_project/Maria_scripts/nc_files/GEBCO_2014_2D_-100.0_0.0_-60.0_45.0.nc'    
     bath_file = '/home/aristizabal/bathymetry_files/GEBCO_2014_2D_-100.0_0.0_-10.0_50.0.nc'
     
     #%%
-    
     from matplotlib import pyplot as plt
     import numpy as np
     import xarray as xr
@@ -584,7 +550,6 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.rc('legend',fontsize=14)
     
     #%% Reading bathymetry data
-    
     ncbath = xr.open_dataset(bath_file)
     bath_lat = ncbath.variables['lat'][:]
     bath_lon = ncbath.variables['lon'][:]
@@ -606,7 +571,6 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     tini = datetime(ti.year,ti.month,ti.day)
     
     #%% Downloading and reading Copernicus output
-       
     motuc = 'python -m motuclient --motu ' + url_cmems + \
         ' --service-id ' + service_id + \
         ' --product-id ' + product_id + \
@@ -673,7 +637,6 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
         temp_bott_COP[:] = np.nan
     
     #%% SST
-    
     kw = dict(levels = np.linspace(24,30,16))
     
     fig, ax = plt.subplots()
@@ -687,13 +650,12 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('Copernicus SST on '+str(time_COP)[0:13],fontsize=16)
+    plt.title('Copernicus SST \n on '+str(time_COP)[0:13],fontsize=16)
         
     file = folder_fig +'COP_SST'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% SSS
-    
     kw = dict(levels = np.linspace(30,37,15))
     
     fig, ax = plt.subplots()
@@ -706,13 +668,12 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('Copernicus SSS on '+str(time_COP)[0:13],fontsize=16)
+    plt.title('Copernicus SSS \n on '+str(time_COP)[0:13],fontsize=16)
         
     file = folder_fig +'COP_SSS'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure ssh
-    
     max_val = np.round(np.max([np.abs(np.nanmin(ssh_COP)),np.nanmax(ssh_COP)]),1)
     kw = dict(levels = np.arange(-max_val,max_val+0.1,0.1))
     
@@ -727,13 +688,12 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('Copernicus SSH on '+str(time_COP)[0:13],fontsize=16)
+    plt.title('Copernicus SSH \n on '+str(time_COP)[0:13],fontsize=16)
     
     file = folder_fig + 'COP_SSH'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure ssh
-    
     max_val = np.round(np.max([np.abs(np.nanmin(ssh_COP)),np.nanmax(ssh_COP)]),1)
     kw = dict(levels = np.arange(-max_val,max_val+0.1,0.1))
     
@@ -747,16 +707,15 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('Copernicus SSH on '+str(time_COP)[0:13],fontsize=16)
+    plt.title('Copernicus SSH \n on '+str(time_COP)[0:13],fontsize=16)
     q=plt.quiver(lon_COP[::5],lat_COP[::5],su_COP[::5,::5],sv_COP[::5,::5] ,scale=3,scale_units='inches',\
               alpha=0.7)
-    plt.quiverkey(q,np.max(lon_COP)-0.3,np.max(lat_COP)+1,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    plt.quiverkey(q,np.max(lon_COP)-0.3,np.max(lat_COP)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
     
     file = folder_fig + 'COP_SSH_UV'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure temp at 200 meters
-    
     kw = dict(levels = np.linspace(10,25,31))
     okdepth = np.where(depth_COP >= 200)[0][0]
     temp_200_COP = np.asarray(COP.variables['thetao'][oktimeCOP,okdepth,:,:])
@@ -776,7 +735,6 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
     
     #%% Figure salinity at 200 meters
-    
     okdepth = np.where(depth_COP >= 200)[0][0]
     salt_200_COP = np.asarray(COP.variables['so'][oktimeCOP,okdepth,:,:])
     
@@ -795,7 +753,6 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
 
     #%% Bottom temperature
-
     kw = dict(levels = np.arange(0,np.nanmax(temp_bott_COP),1))
 
     fig, ax = plt.subplots()
@@ -809,13 +766,12 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
-    plt.title('Copernicus Bottom Temperature on '+str(time_COP)[0:13],fontsize=16)
+    plt.title('Copernicus Bottom Temperature \n on '+str(time_COP)[0:13],fontsize=16)
 
     file = folder_fig +'COP_temp_bott'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
     
     #%% Figure temp transect along storm path
-
     lon_forec_track_interp = np.interp(lat_COP,lat_forec_track,lon_forec_track,left=np.nan,right=np.nan)
     lat_forec_track_interp = np.copy(lat_COP)
     lat_forec_track_interp[np.isnan(lon_forec_track_interp)] = np.nan
