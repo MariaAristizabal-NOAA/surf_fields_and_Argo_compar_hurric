@@ -235,8 +235,8 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
 
     #%% Figure bottom temp 
     
-    kw = dict(levels = np.arange(0,np.nanmax(temp_bott_GOFS),1))
     temp_bott_GOFS = np.asarray(GOFS_ts['water_temp_bottom'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
+    kw = dict(levels = np.arange(0,np.nanmax(temp_bott_GOFS),1))
     
     plt.figure()
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
