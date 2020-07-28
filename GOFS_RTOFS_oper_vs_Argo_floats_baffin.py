@@ -176,7 +176,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     argo_idd = np.unique(argo_ids)
     for i,id in enumerate(argo_idd): 
         okind = np.where(argo_ids == id)[0]
-        plt.plot(np.unique(argo_lons[okind]),np.unique(argo_lats[okind]),'s',color='g',markersize=5,markeredgecolor='k')
+        plt.plot(np.unique(argo_lons[okind]),np.unique(argo_lats[okind]),'s',color='darkorange',markersize=5,markeredgecolor='k')
     
     plt.title('Argo Floats ' + str(tini)[0:10]+'-'+str(tend)[0:10],fontsize=16)
     plt.axis('scaled')
@@ -203,7 +203,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
         argo_salt = argo_salts[okind]
         
         # GOFS
-        print('Retrieving coordinates from GOFS')
+        print('Retrieving variables from GOFS')
         if isinstance(GOFS_ts,float): 
             temp_GOFS = np.nan
             salt_GOFS = np.nan
