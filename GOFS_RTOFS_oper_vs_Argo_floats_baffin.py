@@ -4,7 +4,7 @@ Created on Thu Jun 11 13:32:41 2020
 
 @author: aristizabal
 """
-def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
+def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
     #%% User input
     
     #GOFS3.1 output model location
@@ -69,13 +69,12 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     bath_elevs = bath_elev[oklatbath,:]
     bath_elevsub = bath_elevs[:,oklonbath]  
     
-    #%% Get time bounds for the previous day
-    te = datetime.today()
-    tend = datetime(te.year,te.month,te.day)
-    
-    ti = datetime.today() - timedelta(1)
+    #%% Get time bounds for current day
+    ti = datetime.today()
     tini = datetime(ti.year,ti.month,ti.day)
-    
+    te = datetime.today() + timedelta(1)
+    tend = datetime(te.year,te.month,te.day)
+
     #%% Look for Argo datasets 
     
     e = ERDDAP(server = url_Argo)
@@ -172,6 +171,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig):
     lev = np.arange(-9000,9100,100)
     plt.figure()
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,lev,cmap=cmocean.cm.topo) 
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     
     argo_idd = np.unique(argo_ids)
     for i,id in enumerate(argo_idd): 

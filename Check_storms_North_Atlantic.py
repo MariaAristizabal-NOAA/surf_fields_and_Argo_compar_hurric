@@ -14,8 +14,10 @@ lon_lim_GoMex = [-100,-78]
 lat_lim_GoMex = [15,32.5]
 
 # Caribbean
+#lon_lim_Car = [-87,-60]
+#lat_lim_Car = [8,30]
 lon_lim_Car = [-87,-60]
-lat_lim_Car = [8,30]
+lat_lim_Car = [8,45]
 
 # SAB
 lon_lim_SAB = [-82,-64]
@@ -24,6 +26,10 @@ lat_lim_SAB = [25,36]
 # MAB
 lon_lim_MAB = [-77,-52]
 lat_lim_MAB = [35,46]
+
+# Atlantic
+lon_lim_ATL = [-60,-10]
+lat_lim_ATL = [8,45]
 
 lon_lim = []
 lat_lim = []
@@ -45,11 +51,8 @@ sys.path.append('/home/aristizabal/Code/surf_fields_and_Argo_compar_hurric')
 from Surf_fields_models_baffin import GOFS31_baffin, RTOFS_oper_baffin, Copernicus_baffin
 from GOFS_RTOFS_oper_vs_Argo_floats_baffin import GOFS_RTOFS_vs_Argo_floats
 
-#%% Get time bounds for the previous day
-#te = datetime.today()
-#tend = datetime(te.year,te.month,te.day)
-
-ti = datetime.today() - timedelta(1)
+#%% Get time bounds for current day
+ti = datetime.today()
 tini = datetime(ti.year,ti.month,ti.day)
 
 #%% Download kmz files
@@ -162,12 +165,12 @@ for i,f in enumerate(zip_files_track_latest):
                   np.min(lat_forec_track) <= lat_lim_SAB[1]):
             lon_lim = lon_lim_SAB
             lat_lim = lat_lim_SAB 
-            temp_lim = [10,30.6]
-            salt_lim = [30,36.6]
-            temp200_lim = [5,20.6]
-            salt200_lim = [35.5,36.6]
-            tempb_lim = [0,26.6]
-            tempt_lim = [6,28.6]
+            temp_lim = [25,30.6]
+            salt_lim = [35,37.6]
+            temp200_lim = [10,22.6]
+            salt200_lim = [35.5,37.6]
+            tempb_lim = [0,28.6]
+            tempt_lim = [6,30.6]
         
     if np.logical_and(np.min(lon_forec_track) >= lon_lim_MAB[0],\
                   np.min(lon_forec_track) <= lon_lim_MAB[1]):
@@ -178,9 +181,19 @@ for i,f in enumerate(zip_files_track_latest):
             temp_lim = [10,30.6]
             salt_lim = [30,36.6]
             temp200_lim = [5,20.6]
-            salt200_lim = [35.5,36.6]
+            salt200_lim = [35.0,37.6]
             tempb_lim = [0,26.6]
             tempt_lim = [6,28.6]
+
+    if np.max(lon_forec_track) > lon_lim_MAB[1]:
+        lon_lim = lon_lim_ATL
+        lat_lim = lat_lim_ATL
+        temp_lim = [22,31.1]
+        salt_lim = [31,38.1]
+        temp200_lim = [4,24.6]
+        salt200_lim = [35.0,37.1]
+        tempb_lim = [0,25.6]
+        tempt_lim = [6,30.6]
 
 #%% 
     if np.logical_and(len(name) != 0,len(lon_lim) != 0):
@@ -193,7 +206,7 @@ for i,f in enumerate(zip_files_track_latest):
 
         try:
             print('Reading Argo floats')
-            GOFS_RTOFS_vs_Argo_floats(lon_lim,lat_lim,folder_fig)
+            GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
         except Exception as err:
             print(err)
    
@@ -215,7 +228,7 @@ for i,f in enumerate(zip_files_track_latest):
         except Exception as err:
             print(err) 
 
-        os.chdir('/home/aristizabal/Code/surf_fields_and_Argo_compar_hurric')
+        os.chdir('/home/aristizabal/Code/Surf_fields_and_Argo_compar_hurric')
 
 #%%
 '''

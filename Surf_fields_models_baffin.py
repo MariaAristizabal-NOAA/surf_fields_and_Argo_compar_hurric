@@ -25,6 +25,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     import netCDF4 
     from datetime import datetime, timedelta
     import cmocean
+    import matplotlib.dates as mdates
     
     # Do not produce figures on screen
     plt.switch_backend('agg')
@@ -34,10 +35,10 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.rc('ytick',labelsize=14)
     plt.rc('legend',fontsize=14)
     
-    #%% Get time bounds for the previous day
-    ti = datetime.today() - timedelta(1)
+    #%% Get time bounds for current day
+    ti = datetime.today() 
     tini = datetime(ti.year,ti.month,ti.day,12)
-    
+
     #%% GOGF 3.1
     GOFS_ts = xr.open_dataset(url_GOFS_ts,decode_times=False)
     GOFS_uv = xr.open_dataset(url_GOFS_uv,decode_times=False)
@@ -62,7 +63,12 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     
     oklon_GOFS = np.where(np.logical_and(ln_GOFS >= lon_limG[0],ln_GOFS <= lon_limG[1]))[0]
     oklat_GOFS = np.where(np.logical_and(lt_GOFS >= lat_limG[0],lt_GOFS <= lat_lim[1]))[0]
-    oktime_GOFS = np.where(t_GOFS == tini)[0][0]
+
+    ttGOFS = np.asarray([datetime(t_GOFS[i].year,t_GOFS[i].month,t_GOFS[i].day,t_GOFS[i].hour) for i in np.arange(len(t_GOFS))])
+    tstamp_GOFS = [mdates.date2num(ttGOFS[i]) for i in np.arange(len(ttGOFS))]
+    oktime_GOFS = np.unique(np.round(np.interp(mdates.date2num(tini),tstamp_GOFS,np.arange(len(tstamp_GOFS)))).astype(int))
+    time_GOFS = ttGOFS[oktime_GOFS][0]
+    #oktime_GOFS = np.where(t_GOFS == tini)[0][0]
     
     # Conversion from GOFS convention to glider longitude and latitude
     ln_GOFSg= np.empty((len(ln_GOFS),))
@@ -78,7 +84,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     lon_GOFS= ln_GOFS[oklon_GOFS]
     lon_GOFSg= ln_GOFSg[oklon_GOFS]
     lat_GOFSg= lt_GOFSg[oklat_GOFS]
-    time_GOFS = t_GOFS[oktime_GOFS]
+    #time_GOFS = t_GOFS[oktime_GOFS]
        
     #%% Reading bathymetry data
     ncbath = xr.open_dataset(bath_file)
@@ -95,11 +101,11 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     bath_elevsub = bath_elevs[:,oklonbath]  
     
     #%% loading surface temperature and salinity
-    sst_GOFS = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
-    sss_GOFS = np.asarray(GOFS_ts['salinity'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
-    ssh_GOFS = np.asarray(GOFS_ssh['surf_el'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
-    su_GOFS = np.asarray(GOFS_uv['water_u'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
-    sv_GOFS = np.asarray(GOFS_uv['water_v'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])
+    sst_GOFS = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])[0,:,:]
+    sss_GOFS = np.asarray(GOFS_ts['salinity'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])[0,:,:]
+    ssh_GOFS = np.asarray(GOFS_ssh['surf_el'][oktime_GOFS,oklat_GOFS,oklon_GOFS])[0,:,:]
+    su_GOFS = np.asarray(GOFS_uv['water_u'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])[0,:,:]
+    sv_GOFS = np.asarray(GOFS_uv['water_v'][oktime_GOFS,0,oklat_GOFS,oklon_GOFS])[0,:,:]
 
     #%% Figure sst
     kw = dict(levels = np.arange(temp_lim[0],temp_lim[1],0.5))
@@ -108,7 +114,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,sst_GOFS[:,:],cmap=cmocean.cm.thermal,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
@@ -127,7 +133,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,sss_GOFS,cmap=cmocean.cm.haline,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     plt.axis('scaled')
@@ -145,7 +151,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,ssh_GOFS,cmap=cmocean.cm.curl,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('meters',fontsize=14) 
@@ -164,6 +170,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,ssh_GOFS,cmap=cmocean.cm.curl,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('meters',fontsize=14) 
@@ -173,7 +180,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.title('GOFS SSH \n on '+str(time_GOFS)[0:13],fontsize=16)
     q=plt.quiver(lon_GOFSg[::7],lat_GOFSg[::7],su_GOFS[::7,::7],sv_GOFS[::7,::7] ,scale=3,scale_units='inches',\
               alpha=0.7)
-    plt.quiverkey(q,np.max(lon_GOFSg)-0.3,np.max(lat_GOFSg)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    plt.quiverkey(q,np.max(lon_GOFSg)-0.2,np.max(lat_GOFSg)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
     
     file = folder_fig + 'GOFS_SSH_UV'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
@@ -181,12 +188,13 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     #%% Figure temp at 200 meters
     kw = dict(levels = np.arange(temp200_lim[0],temp200_lim[1],1))
     okdepth = np.where(depth_GOFS >= 200)[0][0]
-    temp_200_GOFS = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,okdepth,oklat_GOFS,oklon_GOFS])
+    temp_200_GOFS = np.asarray(GOFS_ts['water_temp'][oktime_GOFS,okdepth,oklat_GOFS,oklon_GOFS])[0,:,:]
     
     plt.figure()
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,temp_200_GOFS,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=16)
     plt.axis('scaled')
@@ -200,12 +208,13 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     #%% Figure salinity at 200 meters
     kw = dict(levels = np.arange(salt200_lim[0],salt200_lim[1],0.3))
     okdepth = np.where(depth_GOFS >= 200)[0][0]
-    salt_200_GOFS = np.asarray(GOFS_ts['salinity'][oktime_GOFS,okdepth,oklat_GOFS,oklon_GOFS])
+    salt_200_GOFS = np.asarray(GOFS_ts['salinity'][oktime_GOFS,okdepth,oklat_GOFS,oklon_GOFS])[0,:,:]
     
     plt.figure()
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,salt_200_GOFS,cmap=cmocean.cm.haline,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=16)
     plt.axis('scaled')
@@ -217,7 +226,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
 
     #%% Figure bottom temp 
-    temp_bott_GOFS = np.asarray(GOFS_ts['water_temp_bottom'][oktime_GOFS,oklat_GOFS,oklon_GOFS])
+    temp_bott_GOFS = np.asarray(GOFS_ts['water_temp_bottom'][oktime_GOFS,oklat_GOFS,oklon_GOFS])[0,:,:]
     #kw = dict(levels = np.arange(0,np.nanmax(temp_bott_GOFS),1))
     kw = dict(levels = np.arange(tempb_lim[0],tempb_lim[1],1))    
 
@@ -225,6 +234,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_GOFSg,lat_GOFSg,temp_bott_GOFS,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=16)
     plt.axis('scaled')
@@ -311,15 +321,16 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     bath_elevs = bath_elev[oklatbath,:]
     bath_elevsub = bath_elevs[:,oklonbath]  
     
-    #%% Get time bounds for the previous day
-    ti = datetime.today() - timedelta(1)
+    #%% Get time bounds for current day
+    ti = datetime.today() 
     tini = datetime(ti.year,ti.month,ti.day)
+    #tini = datetime(ti.year,ti.month,ti.day,12)
     
     #%% Time window
-    year = int(tini.year)
-    month = int(tini.month)
-    day = int(tini.day)
-    tini = datetime(year, month, day)
+    #year = int(tini.year)
+    #month = int(tini.month)
+    #day = int(tini.day)
+    #tini = datetime(year, month, day)
     #tend = tini + timedelta(days=1)
     
     #%% Read RTOFS grid and time
@@ -371,7 +382,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_RTOFS,lat_RTOFS,sst_RTOFS,cmap=cmocean.cm.thermal,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
@@ -390,7 +401,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_RTOFS,lat_RTOFS,sss_RTOFS,cmap=cmocean.cm.haline,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     plt.axis('scaled')
@@ -408,6 +419,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_RTOFS,lat_RTOFS,sst_RTOFS,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
@@ -415,9 +427,9 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
     plt.title('RTOFS SST \n on '+str(time_RTOFS)[0:13],fontsize=16)
-    q=plt.quiver(lon_RTOFS[::5],lat_RTOFS[::5],su_RTOFS[::5,::5],sv_RTOFS[::5,::5] ,scale=3,scale_units='inches',\
+    q=plt.quiver(lon_RTOFS[::6],lat_RTOFS[::6],su_RTOFS[::6,::6],sv_RTOFS[::6,::6] ,scale=3,scale_units='inches',\
               alpha=0.7)
-    plt.quiverkey(q,np.max(lon_RTOFS)-0.3,np.max(lat_RTOFS)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    plt.quiverkey(q,np.max(lon_RTOFS)-0.2,np.max(lat_RTOFS)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
     
     file = folder_fig + 'RTOFS_SST_UV'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
@@ -431,6 +443,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_RTOFS,lat_RTOFS,temp_200_RTOFS,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
     cbar.ax.tick_params(labelsize=16)
@@ -451,6 +464,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_RTOFS,lat_RTOFS,salt_200_RTOFS,cmap=cmocean.cm.haline,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=16)
     plt.axis('scaled')
@@ -480,6 +494,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_RTOFS,lat_RTOFS,temp_bott_RTOFS,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
     cbar.ax.tick_params(labelsize=16)
@@ -569,21 +584,21 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     bath_elevs = bath_elev[oklatbath,:]
     bath_elevsub = bath_elevs[:,oklonbath]  
     
-    #%% Get time bounds for the previous day
-    te = datetime.today()
-    tend = datetime(te.year,te.month,te.day)
-    
-    ti = datetime.today() - timedelta(1)
-    tini = datetime(ti.year,ti.month,ti.day)
+    #%% Get time bounds for current day
+    ti = datetime.today() 
+    tini = datetime(ti.year,ti.month,ti.day,12)
+
+    te= datetime.today() + timedelta(1) 
+    tend = datetime(te.year,te.month,te.day,12)
     
     #%% Downloading and reading Copernicus output
     motuc = 'python -m motuclient --motu ' + url_cmems + \
         ' --service-id ' + service_id + \
         ' --product-id ' + product_id + \
-        ' --longitude-min ' + str(lon_lim[0]-2/12) + \
-        ' --longitude-max ' + str(lon_lim[1]+2/12) + \
-        ' --latitude-min ' + str(lat_lim[0]-2/12) + \
-        ' --latitude-max ' + str(lat_lim[1]+2/12) + \
+        ' --longitude-min ' + str(lon_lim[0]-5) + \
+        ' --longitude-max ' + str(lon_lim[1]+5) + \
+        ' --latitude-min ' + str(lat_lim[0]-5) + \
+        ' --latitude-max ' + str(lat_lim[1]+5) + \
         ' --date-min ' + str(tini-timedelta(0.5)) + \
         ' --date-max ' + str(tend+timedelta(0.5)) + \
         ' --depth-min ' + depth_min + \
@@ -649,7 +664,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,sst_COP,cmap=cmocean.cm.thermal,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
@@ -668,7 +683,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,sss_COP,cmap=cmocean.cm.haline,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     plt.axis('scaled')
@@ -686,7 +701,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,ssh_COP,cmap=cmocean.cm.curl,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('meters',fontsize=14) 
@@ -705,6 +720,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,ssh_COP,cmap=cmocean.cm.curl,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('meters',fontsize=14) 
@@ -712,9 +728,9 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])
     plt.title('Copernicus SSH \n on '+str(time_COP)[0:13],fontsize=16)
-    q=plt.quiver(lon_COP[::5],lat_COP[::5],su_COP[::5,::5],sv_COP[::5,::5] ,scale=3,scale_units='inches',\
+    q=plt.quiver(lon_COP[::6],lat_COP[::6],su_COP[::6,::6],sv_COP[::6,::6] ,scale=3,scale_units='inches',\
               alpha=0.7)
-    plt.quiverkey(q,np.max(lon_COP)-0.3,np.max(lat_COP)+0.5,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
+    plt.quiverkey(q,np.max(lon_COP)-5,np.max(lat_COP)-4,1,"1 m/s",coordinates='data',color='k',fontproperties={'size': 14})
     
     file = folder_fig + 'COP_SSH_UV'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1) 
@@ -728,6 +744,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,temp_200_COP,cmap=cmocean.cm.thermal,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=16)
     plt.axis('scaled')
@@ -747,6 +764,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,salt_200_COP,cmap=cmocean.cm.haline,**kw)
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=16)
     plt.axis('scaled')
@@ -764,7 +782,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,s
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
     plt.contourf(lon_COP,lat_COP,temp_bott_COP,cmap=cmocean.cm.thermal,**kw)
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='k')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
     cbar = plt.colorbar()
     cbar.ax.tick_params(labelsize=14)
     cbar.ax.set_ylabel('($^\circ$C)',fontsize=14,labelpad=15)
