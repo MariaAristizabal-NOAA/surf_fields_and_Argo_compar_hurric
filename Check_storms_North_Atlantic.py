@@ -121,12 +121,38 @@ for i,f in enumerate(zip_files_track_latest):
             print(s.get_text("coordinates"))
             lon_forec_track[i] = float(s.get_text("coordinates").split('coordinates')[1].split(',')[0])
             lat_forec_track[i] = float(s.get_text("coordinates").split('coordinates')[1].split(',')[1])
-        
+
+        zip_file_cone_latest = [fl for fl in zip_files if np.logical_and(f.split('_')[0][2:] in fl,'CONE_latest' in fl)][0]
+        kmz = ZipFile(zip_file_cone_latest, 'r')
+        kml_ff = glob.glob(zip_file_cone_latest[:-4]+'/*.kml')
+        kml_cone_latest = kmz.open(kml_ff[0].split('/')[1], 'r').read()
+        soup = BeautifulSoup(kml_cone_latest,'html.parser')
+
+        lon_forec_cone = []
+        lat_forec_cone = []
+        for i,s in enumerate(soup.find_all("coordinates")):
+            coor = s.get_text('coordinates').split(',0')
+            for st in coor[1:-1]:
+                lon_forec_cone.append(st.split(',')[0])
+                lat_forec_cone.append(st.split(',')[1])
+
+        lon_forec_cone = np.asarray(lon_forec_cone).astype(float)
+        lat_forec_cone = np.asarray(lat_forec_cone).astype(float)        
+
         zip_file_best_track = [fl for fl in zip_files if np.logical_and(f.split('_')[0][2:] in fl,'best_track' in fl)][0]
         kmz = ZipFile(zip_file_best_track, 'r')
         kml_ff = glob.glob(zip_file_best_track[:-4]+'/*.kml')
         kml_best_track = kmz.open(kml_ff[0].split('/')[1], 'r').read()
         soup = BeautifulSoup(kml_best_track,'html.parser')
+
+        lon_best_track = np.empty(len(soup.find_all("point")))
+        lon_best_track[:] = np.nan
+        lat_best_track = np.empty(len(soup.find_all("point")))
+        lat_best_track[:] = np.nan
+        for i,s in enumerate(soup.find_all("point")):
+            print(s.get_text("coordinates"))
+            lon_best_track[i] = float(s.get_text("coordinates").split('coordinates')[1].split(',')[0])
+            lat_best_track[i] = float(s.get_text("coordinates").split('coordinates')[1].split(',')[1])
 
         #get name
         for f in soup.find_all('name'):
@@ -195,6 +221,9 @@ for i,f in enumerate(zip_files_track_latest):
         tempb_lim = [0,25.6]
         tempt_lim = [6,30.6]
 
+    lon_lim = [np.min(lon_forec_track)-5,np.max(lon_forec_track)+5]
+    lat_lim = [np.min(lat_forec_track)-5,np.max(lat_forec_track)+5]
+
 #%% 
     if np.logical_and(len(name) != 0,len(lon_lim) != 0):
         os.chdir('/www/web/rucool/hurricane/Hurricane_season_' + str(tini.year))
@@ -206,25 +235,25 @@ for i,f in enumerate(zip_files_track_latest):
 
         try:
             print('Reading Argo floats')
-            GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig)
+            GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,lon_best_track,lat_best_track,lon_lim,lat_lim,folder_fig)
         except Exception as err:
             print(err)
    
         try: 
             print('Reading RTOFS')
-            RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_lim,temp200_lim,salt200_lim,tempb_lim,tempt_lim,folder_fig)
+            RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,lon_best_track,lat_best_track,lon_lim,lat_lim,temp_lim,salt_lim,temp200_lim,salt200_lim,tempb_lim,tempt_lim,folder_fig)
         except Exception as err:
             print(err)    
 
         try:
             print('Reading GOFS 3.1')
-            GOFS31_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_lim,temp200_lim,salt200_lim,tempb_lim,tempt_lim,folder_fig)
+            GOFS31_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,lon_best_track,lat_best_track,lon_lim,lat_lim,temp_lim,salt_lim,temp200_lim,salt200_lim,tempb_lim,tempt_lim,folder_fig)
         except Exception as err:
             print(err) 
 
         try:
             print('Reading Copernicus')
-            Copernicus_baffin(lon_forec_track,lat_forec_track,lon_lim,lat_lim,temp_lim,salt_lim,temp200_lim,salt200_lim,tempb_lim,tempt_lim,folder_fig)
+            Copernicus_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,lon_best_track,lat_best_track,lon_lim,lat_lim,temp_lim,salt_lim,temp200_lim,salt200_lim,tempb_lim,tempt_lim,folder_fig)
         except Exception as err:
             print(err) 
 

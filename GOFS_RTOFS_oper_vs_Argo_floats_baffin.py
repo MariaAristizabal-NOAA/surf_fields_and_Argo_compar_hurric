@@ -4,7 +4,7 @@ Created on Thu Jun 11 13:32:41 2020
 
 @author: aristizabal
 """
-def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_lim,lat_lim,folder_fig):
+def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,lon_best_track,lat_best_track,lon_lim,lat_lim,folder_fig):
     #%% User input
     
     #GOFS3.1 output model location
@@ -171,7 +171,9 @@ def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_lim,lat_lim,fo
     lev = np.arange(-9000,9100,100)
     plt.figure()
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,lev,cmap=cmocean.cm.topo) 
-    plt.plot(lon_forec_track,lat_forec_track,'.-',color='grey')
+    plt.plot(lon_forec_track,lat_forec_track,'.-',color='gold')
+    plt.plot(lon_forec_cone,lat_forec_cone,'.-b',markersize=1)
+    plt.plot(lon_best_track,lat_best_track,'or',markersize=3)
     
     argo_idd = np.unique(argo_ids)
     for i,id in enumerate(argo_idd): 
@@ -208,7 +210,10 @@ def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_lim,lat_lim,fo
             temp_GOFS = np.nan
             salt_GOFS = np.nan
         else:
-            oktt_GOFS = np.where(t_GOFS >= argo_time[0])[0][0]
+            #oktt_GOFS = np.where(t_GOFS >= argo_time[0])[0][0]
+            ttGOFS = np.asarray([datetime(t_GOFS[i].year,t_GOFS[i].month,t_GOFS[i].day,t_GOFS[i].hour) for i in np.arange(len(t_GOFS))])
+            tstamp_GOFS = [mdates.date2num(ttGOFS[i]) for i in np.arange(len(ttGOFS))]
+            oktt_GOFS = np.unique(np.round(np.interp(mdates.date2num(argo_time[0]),tstamp_GOFS,np.arange(len(tstamp_GOFS)))).astype(int))[0]
             oklat_GOFS = np.where(lt_GOFS >= argo_lat[0])[0][0]
             oklon_GOFS = np.where(ln_GOFS >= argo_lon[0]+360)[0][0]
             temp_GOFS = np.asarray(GOFS_ts['water_temp'][oktt_GOFS,:,oklat_GOFS,oklon_GOFS])
