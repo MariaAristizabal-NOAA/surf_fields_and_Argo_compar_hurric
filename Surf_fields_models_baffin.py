@@ -36,7 +36,8 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,
     plt.rc('legend',fontsize=14)
     
     #%% Get time bounds for current day
-    ti = datetime.today() 
+    #ti = datetime.today() 
+    ti = datetime.today() - timedelta(hours=6)
     tini = datetime(ti.year,ti.month,ti.day,12)
 
     #%% GOGF 3.1
@@ -340,13 +341,6 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     tini = datetime(ti.year,ti.month,ti.day)
     #tini = datetime(ti.year,ti.month,ti.day,12)
     
-    #%% Time window
-    #year = int(tini.year)
-    #month = int(tini.month)
-    #day = int(tini.day)
-    #tini = datetime(year, month, day)
-    #tend = tini + timedelta(days=1)
-    
     #%% Read RTOFS grid and time
     print('Retrieving coordinates from RTOFS')
     
@@ -613,8 +607,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     #%% Get time bounds for current day
     ti = datetime.today() 
     tini = datetime(ti.year,ti.month,ti.day,12)
-
-    te= datetime.today() + timedelta(1) 
+    te= ti + timedelta(1) 
     tend = datetime(te.year,te.month,te.day,12)
     
     #%% Downloading and reading Copernicus output

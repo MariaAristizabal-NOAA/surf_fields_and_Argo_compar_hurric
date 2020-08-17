@@ -70,9 +70,10 @@ def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_forec_cone,lat
     bath_elevsub = bath_elevs[:,oklonbath]  
     
     #%% Get time bounds for current day
-    ti = datetime.today()
+    #ti = datetime.today()
+    ti = datetime.today() - timedelta(1) - timedelta(hours=6)
     tini = datetime(ti.year,ti.month,ti.day)
-    te = datetime.today() + timedelta(1)
+    te = ti + timedelta(2)
     tend = datetime(te.year,te.month,te.day)
 
     #%% Look for Argo datasets 

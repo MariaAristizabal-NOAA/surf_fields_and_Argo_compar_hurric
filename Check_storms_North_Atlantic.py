@@ -52,7 +52,8 @@ from Surf_fields_models_baffin import GOFS31_baffin, RTOFS_oper_baffin, Copernic
 from GOFS_RTOFS_oper_vs_Argo_floats_baffin import GOFS_RTOFS_vs_Argo_floats
 
 #%% Get time bounds for current day
-ti = datetime.today()
+#ti = datetime.today()
+ti = datetime.today() - timedelta(hours=6)
 tini = datetime(ti.year,ti.month,ti.day)
 
 #%% Download kmz files
