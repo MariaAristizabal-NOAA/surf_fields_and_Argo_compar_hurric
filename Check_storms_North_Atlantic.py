@@ -166,12 +166,12 @@ for i,f in enumerate(zip_files_track_latest):
                   np.min(lat_forec_track) <= lat_lim_GoMex[1]):
             lon_lim = lon_lim_GoMex
             lat_lim = lat_lim_GoMex
-            temp_lim = [25,31.1]
+            temp_lim = [25,31.6]
             salt_lim = [31,37.1]
             temp200_lim = [5,24.6]
             salt200_lim = [35.5,37.6]
             tempb_lim = [0,25.6]
-            tempt_lim = [6,30.6]
+            tempt_lim = [6,31.1]
         
     if np.logical_and(np.min(lon_forec_track) >= lon_lim_Car[0],\
                   np.min(lon_forec_track) <= lon_lim_Car[1]):
@@ -179,12 +179,12 @@ for i,f in enumerate(zip_files_track_latest):
                   np.min(lat_forec_track) <= lat_lim_Car[1]):
             lon_lim = lon_lim_Car
             lat_lim = lat_lim_Car  
-            temp_lim = [25,31.1]
+            temp_lim = [25,31.6]
             salt_lim = [31,37.1]
             temp200_lim = [5,24.6]
             salt200_lim = [35.5,37.6]
             tempb_lim = [0,25.6]        
-            tempt_lim = [6,30.6]
+            tempt_lim = [6,31.1]
 
     if np.logical_and(np.min(lon_forec_track) >= lon_lim_SAB[0],\
                   np.min(lon_forec_track) <= lon_lim_SAB[1]):

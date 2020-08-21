@@ -181,7 +181,7 @@ def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_forec_cone,lat
         okind = np.where(argo_ids == id)[0]
         plt.plot(np.unique(argo_lons[okind]),np.unique(argo_lats[okind]),'s',color='darkorange',markersize=5,markeredgecolor='k')
     
-    plt.title('Argo Floats ' + str(tini)[0:10]+'-'+str(tend)[0:10],fontsize=16)
+    plt.title('Argo Floats ' + str(tini)[0:13]+'-'+str(tend)[0:13],fontsize=16)
     plt.axis('scaled')
     plt.xlim(lon_lim[0],lon_lim[1])
     plt.ylim(lat_lim[0],lat_lim[1])

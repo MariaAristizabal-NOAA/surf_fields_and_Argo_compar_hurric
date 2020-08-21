@@ -289,7 +289,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,
     cbar.ax.tick_params(labelsize=14)
     plt.ylabel('Depth (m)',fontsize=14)
     plt.xlabel('Latitude ($^o$)',fontsize=14)
-    plt.title('GOFS Temperature \n along Forecasted Storm Track',fontsize=16)
+    plt.title('GOFS Temp. along Forecasted Storm Track \n on '+str(time_GOFS)[0:13],fontsize=16)
     
     file = folder_fig + 'GOFS_temp_along_forecasted_track_'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
@@ -337,7 +337,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     bath_elevsub = bath_elevs[:,oklonbath]  
     
     #%% Get time bounds for current day
-    ti = datetime.today() 
+    ti = datetime.today() - timedelta(hours=6)
     tini = datetime(ti.year,ti.month,ti.day)
     #tini = datetime(ti.year,ti.month,ti.day,12)
     
@@ -554,7 +554,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     cbar.ax.tick_params(labelsize=14)
     plt.ylabel('Depth (m)',fontsize=14)
     plt.xlabel('Latitude ($^o$)',fontsize=14)
-    plt.title('RTOFS Temperature \n along Forecasted Storm Track',fontsize=16)
+    plt.title('RTOFS Temp. along Forecasted Storm Track \n on '+str(time_RTOFS)[0:13],fontsize=16)
     
     file = folder_fig + 'RTOFS_temp_along_forecasted_track_'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
@@ -605,7 +605,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     bath_elevsub = bath_elevs[:,oklonbath]  
     
     #%% Get time bounds for current day
-    ti = datetime.today() 
+    ti = datetime.today() - timedelta(hours=6)
     tini = datetime(ti.year,ti.month,ti.day,12)
     te= ti + timedelta(1) 
     tend = datetime(te.year,te.month,te.day,12)
@@ -855,7 +855,7 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     cbar.ax.tick_params(labelsize=14)
     plt.ylabel('Depth (m)',fontsize=14)
     plt.xlabel('Latitude ($^o$)',fontsize=14)
-    plt.title('Copernicus Temperature \n along Forecasted Storm Track',fontsize=16)
+    plt.title('Copernicus Temp. along Forecasted Storm Track \n on '+str(time_COP)[0:13],fontsize=16)
 
     file = folder_fig + 'COP_temp_along_forecasted_track'
     plt.savefig(file,bbox_inches = 'tight',pad_inches = 0.1)
