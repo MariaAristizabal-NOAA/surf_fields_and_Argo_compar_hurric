@@ -114,6 +114,7 @@ def GOFS31_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_cone,
     plt.figure()
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contour(lon_GOFSg,lat_GOFSg,sst_GOFS[:,:],levels=[26],colors='white')
     plt.contourf(lon_GOFSg,lat_GOFSg,sst_GOFS[:,:],cmap=cmocean.cm.thermal,**kw)
     plt.plot(lon_forec_track,lat_forec_track,'.-',color='gold')
     plt.plot(lon_forec_cone,lat_forec_cone,'.-b',markersize=1)
@@ -389,6 +390,7 @@ def RTOFS_oper_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
     fig, ax = plt.subplots()
     plt.contour(bath_lonsub,bath_latsub,bath_elevsub,[0],colors='k')
     plt.contourf(bath_lonsub,bath_latsub,bath_elevsub,[0,10000],colors='seashell')
+    plt.contour(lon_RTOFS,lat_RTOFS,sst_RTOFS,levels=[26],colors='white')
     plt.contourf(lon_RTOFS,lat_RTOFS,sst_RTOFS,cmap=cmocean.cm.thermal,**kw)
     plt.plot(lon_forec_track,lat_forec_track,'.-',color='gold')
     plt.plot(lon_forec_cone,lat_forec_cone,'.-b',markersize=1)
@@ -618,8 +620,8 @@ def Copernicus_baffin(lon_forec_track,lat_forec_track,lon_forec_cone,lat_forec_c
         ' --longitude-max ' + str(lon_lim[1]+5) + \
         ' --latitude-min ' + str(lat_lim[0]-5) + \
         ' --latitude-max ' + str(lat_lim[1]+5) + \
-        ' --date-min ' + str(tini-timedelta(0.5)) + \
-        ' --date-max ' + str(tend+timedelta(0.5)) + \
+        ' --date-min ' + '"' + str(tini-timedelta(0.5)) + '"' + \
+        ' --date-max ' + '"' + str(tend+timedelta(0.5)) + '"' + \
         ' --depth-min ' + depth_min + \
         ' --depth-max ' + '350' + \
         ' --variable ' + 'thetao' + \

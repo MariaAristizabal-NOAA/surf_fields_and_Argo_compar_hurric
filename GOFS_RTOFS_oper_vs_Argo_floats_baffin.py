@@ -275,8 +275,8 @@ def GOFS_RTOFS_vs_Argo_floats(lon_forec_track,lat_forec_track,lon_forec_cone,lat
         ' --longitude-max ' + str(argo_lon[0]+2/12) + \
         ' --latitude-min ' + str(argo_lat[0]-2/12) + \
         ' --latitude-max ' + str(argo_lat[0]+2/12) + \
-        ' --date-min ' + str(tini-timedelta(0.5)) + \
-        ' --date-max ' + str(tend+timedelta(0.5)) + \
+        ' --date-min ' + '"' + str(tini-timedelta(0.5)) + '"' + \
+        ' --date-max ' + '"' + str(tend+timedelta(0.5)) + '"' + \
         ' --depth-min ' + depth_min + \
         ' --depth-max ' + str(np.nanmax(argo_pres)+1000) + \
         ' --variable ' + 'thetao' + ' ' + \
